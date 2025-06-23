@@ -1,10 +1,79 @@
-document.addEventListener("DOMContentLoaded",()=>{let e=document.getElementById("model-type-select"),t=document.getElementById("model-structure-controls"),l=document.getElementById("draw-button"),s=document.getElementById("main-canvas"),a=document.getElementById("plot-canvas"),i=document.getElementById("plot-scale-select"),o=document.getElementById("diagram-settings-panel"),n=document.getElementById("plot-settings-panel"),d=document.getElementById("canvas-width-input"),r=document.getElementById("canvas-height-input"),m=document.getElementById("image-scale-input");document.getElementById("output-dimensions-preview");let c=document.getElementById("download-diagram-button"),p=document.getElementById("download-plot-button"),u=document.getElementById("download-code-button"),b=document.getElementById("download-nonmem-button"),$=document.getElementById("download-monolix-button"),v=document.getElementById("download-r-button"),x=new PharmaGraph("main-canvas","plot-canvas"),g={ka:"kₐ",ktr:"Ktr",mtt:"MTT = (N+1)/Ktr",k10:"k₁₀",kel:"Kₑₗ",k12:"K₁₂",k21:"K₂₁",k13:"K₁₃",k31:"K₃₁",iv:"IV Injection",kon:"Kₒₙ",koff:"Kₒﬀ",kint:"Kᵢₙₜ",ksyn:"Kₛᵧₙ",kdeg:"Kₔₑ₉"},f={ka:{t:"Absorption",c:"#D3E4CD"},c1:{t:"Central C₁",c:"#FDFD96"},c2:{t:"Peripheral C₂",c:"#C8E6C9"},c3:{t:"Peripheral C₃",c:"#B2DFDB"},rec:{t:"Receptor",c:"#D1C4E9"},comp:{t:"LR Complex",c:"#F8BBD0"}},y=()=>{let e=document.querySelectorAll(".tab-button"),t=document.querySelectorAll(".tab-panel"),l=document.querySelector('[data-tab="diagram-settings"]');e.forEach(l=>{l.addEventListener("click",()=>{e.forEach(e=>{e.classList.remove("border-blue-500","text-blue-600"),e.classList.add("border-transparent","text-gray-500")}),l.classList.add("border-blue-500","text-blue-600"),l.classList.remove("border-transparent","text-gray-500"),t.forEach(e=>e.classList.add("hidden")),document.getElementById(`${l.dataset.tab}-panel`).classList.remove("hidden")})}),l&&l.click()},h=()=>{let l=e.value;t.innerHTML="","tmdd"===l?t.innerHTML=`<div class="grid grid-cols-2 gap-4">
+/**
+ * @file custom-func.js
+ * @description Main application logic that connects the UI to the drawing and code generation libraries.
+ */
+
+document.addEventListener('DOMContentLoaded', () => {
+    // --- UI Element References ---
+    const modelTypeSelect = document.getElementById('model-type-select');
+    const modelStructureControls = document.getElementById('model-structure-controls');
+    const drawButton = document.getElementById('draw-button');
+    const mainCanvas = document.getElementById('main-canvas');
+    const plotCanvas = document.getElementById('plot-canvas');
+    const plotScaleSelect = document.getElementById('plot-scale-select');
+    const diagramSettingsPanel = document.getElementById('diagram-settings-panel');
+    const plotSettingsPanel = document.getElementById('plot-settings-panel');
+    const canvasWidthInput = document.getElementById('canvas-width-input');
+    const canvasHeightInput = document.getElementById('canvas-height-input');
+    const imageScaleInput = document.getElementById('image-scale-input');
+    const outputDimensionsPreview = document.getElementById('output-dimensions-preview');
+    const downloadDiagramButton = document.getElementById('download-diagram-button');
+    const downloadPlotButton = document.getElementById('download-plot-button');
+    const downloadCodeButton = document.getElementById('download-code-button');
+    const downloadNonmemButton = document.getElementById('download-nonmem-button');
+    const downloadMonolixButton = document.getElementById('download-monolix-button');
+    const downloadRButton = document.getElementById('download-r-button');
+    
+    const graph = new PharmaGraph('main-canvas', 'plot-canvas');
+    const defaultLabels = { 
+        ka: 'kₐ', ktr: 'Ktr', mtt: 'MTT = (N+1)/Ktr', k10: 'k₁₀', kel: 'Kₑₗ', k12: 'K₁₂', k21: 'K₂₁', k13: 'K₁₃', k31: 'K₃₁', iv: 'IV Injection',
+        kon: 'Kₒₙ', koff: 'Kₒﬀ', kint: 'Kᵢₙₜ', ksyn: 'Kₛᵧₙ', kdeg: 'Kₔₑ₉'
+    };
+    const defaultCompData = {
+        ka:{t:'Absorption',c:'#D3E4CD'}, c1:{t:'Central C₁',c:'#FDFD96'}, c2:{t:'Peripheral C₂',c:'#C8E6C9'}, c3:{t:'Peripheral C₃',c:'#B2DFDB'},
+        rec:{t:'Receptor', c:'#D1C4E9'}, comp:{t:'LR Complex', c:'#F8BBD0'}
+    };
+
+    // --- UI & Control Functions ---
+    const setupTabs = () => {
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const tabPanels = document.querySelectorAll('.tab-panel');
+        const defaultTabButton = document.querySelector('[data-tab="diagram-settings"]');
+        
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                tabButtons.forEach(btn => {
+                    btn.classList.remove('border-blue-500', 'text-blue-600');
+                    btn.classList.add('border-transparent', 'text-gray-500');
+                });
+                button.classList.add('border-blue-500', 'text-blue-600');
+                button.classList.remove('border-transparent', 'text-gray-500');
+                tabPanels.forEach(panel => panel.classList.add('hidden'));
+                document.getElementById(`${button.dataset.tab}-panel`).classList.remove('hidden');
+            });
+        });
+        if(defaultTabButton) defaultTabButton.click();
+    };
+    
+    const updateModelStructureControls = () => {
+        const modelType = modelTypeSelect.value;
+        modelStructureControls.innerHTML = '';
+        if (modelType === 'tmdd') {
+            modelStructureControls.innerHTML = `<div class="grid grid-cols-2 gap-4">
                     <div><label class="block text-sm font-semibold text-slate-600 mb-1">PK Structure</label><select id="pk-comp-select" class="w-full text-sm rounded-md border-slate-300"><option value="1">1-Comp</option><option value="2" selected>2-Comp</option></select></div>
                     <div><label class="block text-sm font-semibold text-slate-600 mb-1">PK Administration</label><select id="pk-admin-select" class="w-full text-sm rounded-md border-slate-300"><option value="iv">IV Bolus</option><option value="oral">Oral (1st Order)</option><option value="transit">Oral (Transit)</option></select></div>
-                </div>`:t.innerHTML=`<div class="grid grid-cols-2 gap-4">
+                </div>`;
+        } else { // Standard PK
+            modelStructureControls.innerHTML = `<div class="grid grid-cols-2 gap-4">
                     <div><label for="compartment-select" class="block text-sm font-semibold text-slate-600 mb-1">Compartments</label><select id="compartment-select" class="w-full text-sm rounded-md border-slate-300"><option value="1">1-Comp</option><option value="2" selected>2-Comp</option><option value="3">3-Comp</option></select></div>
                     <div><label for="admin-select" class="block text-sm font-semibold text-slate-600 mb-1">Administration</label><select id="admin-select" class="w-full text-sm rounded-md border-slate-300"><option value="iv">IV Bolus</option><option value="oral">Oral (1st Order)</option><option value="transit">Oral (Transit)</option></select></div>
-                </div>`,t.querySelectorAll("select").forEach(e=>e.addEventListener("change",()=>{k(),C()}))},_=()=>{n.innerHTML=`<div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                </div>`;
+        }
+        modelStructureControls.querySelectorAll('select').forEach(el => el.addEventListener('change', () => { updateDiagramSettings(); drawDiagram(); }));
+    };
+
+    const populatePlotSettings = () => {
+        plotSettingsPanel.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                 <div class="space-y-3 col-span-2 border-b pb-4 mb-2">
                      <h4 class="font-semibold">Dosing Regimen</h4>
                      <div class="grid grid-cols-3 gap-2">
@@ -25,8 +94,115 @@ document.addEventListener("DOMContentLoaded",()=>{let e=document.getElementById(
                         <div><label class="block text-sm">Line Color:<input type="color" id="plot-linecolor" value="#007bff" class="mt-1 w-full h-9 p-0 rounded-md"></label></div>
                     </div>
                      <div class="grid grid-cols-2 gap-4 mt-4">
-                         <label class="block text-sm">Width (px):<input type="number" id="plot-width" value="860" min="200" step="10" class="mt-1 w-full text-sm rounded-md border-slate-300"></label>
+                         <label class="block text-sm">Width (px):<input type="number" id="plot-width" value="700" min="200" step="10" class="mt-1 w-full text-sm rounded-md border-slate-300"></label>
                          <label class="block text-sm">Height (px):<input type="number" id="plot-height" value="300" min="200" step="10" class="mt-1 w-full text-sm rounded-md border-slate-300"></label>
                      </div>
                 </div>
-            </div>`,n.querySelectorAll("input, select").forEach(e=>e.addEventListener("input",B)),document.getElementById("plot-width").addEventListener("input",T),document.getElementById("plot-height").addEventListener("input",T)},k=()=>{o.innerHTML="";let t=e.value,l=[],s=[];if("tmdd"===t){let a=parseInt(document.getElementById("pk-comp-select")?.value,10)||2,i=document.getElementById("pk-admin-select")?.value||"iv";l=["kel","kon","koff","ksyn","kdeg","kint"],s=["c1","rec","comp"],"iv"!==i?(l.push("ka"),s.unshift("ka")):l.push("iv"),"transit"===i&&l.push("ktr","mtt"),a>1&&(l.push("k12","k21"),s.push("c2"))}else{let n=parseInt(document.getElementById("compartment-select")?.value,10)||2,d=document.getElementById("admin-select")?.value||"iv";l=["k10"],s=["c1"],n>=2&&(l.push("k12","k21"),s.push("c2")),n>=3&&(l.push("k13","k31"),s.push("c3")),"oral"===d?(l.push("ka"),s.unshift("ka")):"transit"===d?l.push("ktr","mtt"):l.push("iv")}let r=document.createElement("div");r.innerHTML='<h3 class="text-lg font-semibold text-slate-700 border-b pb-2 flex items-center gap-2"><i class="fa-solid fa-palette text-indigo-500"></i><span>Global Style</span></h3><div class="grid grid-cols-[120px_1fr] items-center gap-3 mt-3"><label for="shape-select" class="text-sm font-semibold text-slate-600 text-right">Comp. Shape:</label><select id="shape-select" class="w-full text-sm rounded-md border-slate-300"><option value="rectangle" selected>Rectangle</option><option value="circle">Circle</option></select></div><div class="grid grid-cols-[120px_1fr] items-center gap-3 mt-3"><label for="font-family-select" class="text-sm font-semibold text-slate-600 text-right">Font Family:</label><select id="font-family-select" class="w-full text-sm rounded-md border-slate-300"><option>sans-serif</option><option>serif</option><option>monospace</option></select></div><div class="grid grid-cols-[120px_1fr] items-center gap-3 mt-3"><label for="font-size-input" class="text-sm font-semibold text-slate-600 text-right">Font Size:</label><input type="number" id="font-size-input" value="16" min="8" class="w-full text-sm rounded-md border-slate-300"></div><div class="grid grid-cols-[120px_1fr] items-center gap-3 mt-3"><label for="text-color-input" class="text-sm font-semibold text-slate-600 text-right">Text Color:</label><input type="color" id="text-color-input" value="#000000" class="w-full h-9 p-0 rounded-md"></div><div class="grid grid-cols-[120px_1fr] items-center gap-3 mt-3"><label for="line-color-input" class="text-sm font-semibold text-slate-600 text-right">Line/Arrow Color:</label><input type="color" id="line-color-input" value="#333333" class="w-full h-9 p-0 rounded-md"></div>',o.appendChild(r);let m=document.createElement("div");m.innerHTML='<h3 class="text-lg font-semibold text-slate-700 border-b pb-2 mt-4 flex items-center gap-2"><i class="fa-solid fa-right-left text-teal-500"></i><span>Rate Constants & Labels</span></h3>',l.forEach(e=>{m.innerHTML+=`<div class="grid grid-cols-[120px_1fr] items-center gap-3 mt-3"><label for="label-${e}" class="text-sm font-semibold text-slate-600 text-right">${e.toUpperCase()}:</label><input type="text" id="label-${e}" value="${g[e]}" class="w-full text-sm rounded-md border-slate-300"></div>`});let c="pk"===t?document.getElementById("admin-select")?.value:document.getElementById("pk-admin-select")?.value;"transit"===c&&(m.innerHTML+='<div class="grid grid-cols-[120px_1fr] items-center gap-3 mt-3"><label for="num-transit-input" class="text-sm font-semibold text-slate-600 text-right"># Transit Comps (N):</label><input type="number" id="num-transit-input" value="4" min="1" class="w-full text-sm rounded-md border-slate-300"></div>'),o.appendChild(m);let p=document.createElement("div");p.innerHTML='<h3 class="text-lg font-semibold text-slate-700 border-b pb-2 mt-4 flex items-center gap-2"><i class="fa-solid fa-box text-orange-500"></i><span>Compartments</span></h3>',s.forEach(e=>{let t=f[e];p.innerHTML+=`<div class="flex flex-col gap-3 pt-4 border-t border-slate-200 mt-4"><div class="grid grid-cols-[120px_1fr] items-center gap-3"><label for="text-${e}" class="text-sm font-semibold text-slate-600 text-right">${t.t.split(" ")[0]} Text:</label><input type="text" id="text-${e}" value="${t.t}" class="w-full text-sm rounded-md border-slate-300"></div><div class="grid grid-cols-[120px_1fr] items-center gap-3"><label for="color-${e}" class="text-sm font-semibold text-slate-600 text-right">BG Color:</label><input type="color" id="color-${e}" value="${t.c}" class="w-full h-9 p-0 rounded-md"></div></div>`}),o.appendChild(p),o.querySelectorAll("input, select").forEach(e=>e.addEventListener("input",C))},E=()=>{let t=e.value,l=e=>document.getElementById(e)?.value||"",s=e=>parseInt(document.getElementById(e)?.value,10),a={modelType:t,compartments:[],labels:{},options:{shape:l("shape-select"),fontFamily:l("font-family-select")||"sans-serif",fontSize:s("font-size-input")||16,textColor:l("text-color-input")||"#000000",lineColor:l("line-color-input")||"#333333"}};return o.querySelectorAll('input[id^="label-"]').forEach(e=>{a.labels[e.id.replace("label-","")]=e.value}),o.querySelectorAll('input[id^="text-"]').forEach(e=>{let t=e.id.replace("text-","");a.compartments.push({id:t,text:e.value,color:l(`color-${t}`)})}),"tmdd"===t?(a.pkModel={numComp:s("pk-comp-select")||2,adminType:l("pk-admin-select")||"iv"},"transit"===a.pkModel.adminType&&(a.numTransit=s("num-transit-input")||4)):(a.numComp=s("compartment-select")||2,a.adminType=l("admin-select")||"iv","transit"===a.adminType&&(a.numTransit=s("num-transit-input")||4)),a},w=()=>{},L=()=>{},C=()=>{x.drawModel(E(),w(),L())},B=()=>{x.plotter.draw(x.simulator.solve(E(),L()),w())},I=()=>{s.width=parseInt(d.value,10)||900,s.height=parseInt(r.value,10)||450,M(),C()},T=()=>{a.width=parseInt(document.getElementById("plot-width").value,10)||860,a.height=parseInt(document.getElementById("plot-height").value,10)||300,B()},M=()=>{},S=(e,t)=>{},A=()=>{},K=e=>{};e.addEventListener("change",()=>{h(),k(),C()}),l.addEventListener("click",C),i.addEventListener("change",B),c.addEventListener("click",()=>{let e=E(),t="tmdd"===e.modelType?`tmdd-pk${e.pkModel.numComp}comp`:`${e.numComp}-comp-${e.adminType}`;S("main-canvas",`${t}-diagram`)}),p.addEventListener("click",()=>{let e=E(),t="tmdd"===e.modelType?`tmdd-pk${e.pkModel.numComp}comp`:`${e.numComp}-comp-${e.adminType}`;S("plot-canvas",`${t}-plot`)}),u.addEventListener("click",A),d.addEventListener("input",I),r.addEventListener("input",I),m.addEventListener("input",M),b.addEventListener("click",()=>K("nonmem")),$.addEventListener("click",()=>K("monolix")),v.addEventListener("click",()=>K("r")),y(),_(),h(),k(),C(),M()});
+            </div>`;
+        plotSettingsPanel.querySelectorAll('input, select').forEach(input => input.addEventListener('input', replotOnly));
+        document.getElementById('plot-width').addEventListener('input', handlePlotCanvasResize);
+        document.getElementById('plot-height').addEventListener('input', handlePlotCanvasResize);
+    };
+
+    const updateDiagramSettings = () => {
+        diagramSettingsPanel.innerHTML = '';
+        const modelType = modelTypeSelect.value;
+        let labelsToShow = [], compsToShow = [];
+        
+        if (modelType === 'tmdd') {
+            const pkComp = parseInt(document.getElementById('pk-comp-select')?.value, 10) || 2;
+            const pkAdmin = document.getElementById('pk-admin-select')?.value || 'iv';
+            labelsToShow = ['kel', 'kon', 'koff', 'ksyn', 'kdeg', 'kint'];
+            compsToShow = ['c1', 'rec', 'comp'];
+            if (pkAdmin !== 'iv') { labelsToShow.push('ka'); compsToShow.unshift('ka'); } 
+            else { labelsToShow.push('iv'); }
+            if (pkAdmin === 'transit') { labelsToShow.push('ktr', 'mtt'); }
+            if (pkComp > 1) { labelsToShow.push('k12', 'k21'); compsToShow.push('c2'); }
+        } else {
+            const numComp = parseInt(document.getElementById('compartment-select')?.value, 10) || 2;
+            const adminType = document.getElementById('admin-select')?.value || 'iv';
+            labelsToShow = ['k10']; compsToShow = ['c1'];
+            if (numComp >= 2) { labelsToShow.push('k12', 'k21'); compsToShow.push('c2'); }
+            if (numComp >= 3) { labelsToShow.push('k13', 'k31'); compsToShow.push('c3'); }
+            if (adminType === 'oral') { labelsToShow.push('ka'); compsToShow.unshift('ka'); }
+            else if (adminType === 'transit') { labelsToShow.push('ktr', 'mtt'); }
+            else { labelsToShow.push('iv'); }
+        }
+
+        const styleSection = document.createElement('div');
+        styleSection.innerHTML = `<h3 class="text-lg font-semibold text-slate-700 border-b pb-2 flex items-center gap-2"><i class="fa-solid fa-palette text-indigo-500"></i><span>Global Style</span></h3><div class="grid grid-cols-[120px_1fr] items-center gap-3 mt-3"><label for="shape-select" class="text-sm font-semibold text-slate-600 text-right">Comp. Shape:</label><select id="shape-select" class="w-full text-sm rounded-md border-slate-300"><option value="rectangle" selected>Rectangle</option><option value="circle">Circle</option></select></div><div class="grid grid-cols-[120px_1fr] items-center gap-3 mt-3"><label for="font-family-select" class="text-sm font-semibold text-slate-600 text-right">Font Family:</label><select id="font-family-select" class="w-full text-sm rounded-md border-slate-300"><option>sans-serif</option><option>serif</option><option>monospace</option></select></div><div class="grid grid-cols-[120px_1fr] items-center gap-3 mt-3"><label for="font-size-input" class="text-sm font-semibold text-slate-600 text-right">Font Size:</label><input type="number" id="font-size-input" value="16" min="8" class="w-full text-sm rounded-md border-slate-300"></div><div class="grid grid-cols-[120px_1fr] items-center gap-3 mt-3"><label for="text-color-input" class="text-sm font-semibold text-slate-600 text-right">Text Color:</label><input type="color" id="text-color-input" value="#000000" class="w-full h-9 p-0 rounded-md"></div><div class="grid grid-cols-[120px_1fr] items-center gap-3 mt-3"><label for="line-color-input" class="text-sm font-semibold text-slate-600 text-right">Line/Arrow Color:</label><input type="color" id="line-color-input" value="#333333" class="w-full h-9 p-0 rounded-md"></div>`;
+        diagramSettingsPanel.appendChild(styleSection);
+        
+        const arrowLabelSection = document.createElement('div');
+        arrowLabelSection.innerHTML = `<h3 class="text-lg font-semibold text-slate-700 border-b pb-2 mt-4 flex items-center gap-2"><i class="fa-solid fa-right-left text-teal-500"></i><span>Rate Constants & Labels</span></h3>`;
+        labelsToShow.forEach(label => { arrowLabelSection.innerHTML += `<div class="grid grid-cols-[120px_1fr] items-center gap-3 mt-3"><label for="label-${label}" class="text-sm font-semibold text-slate-600 text-right">${label.toUpperCase()}:</label><input type="text" id="label-${label}" value="${defaultLabels[label]}" class="w-full text-sm rounded-md border-slate-300"></div>`; });
+        const adminTypeValue = (modelType === 'pk') ? document.getElementById('admin-select')?.value : document.getElementById('pk-admin-select')?.value;
+        if (adminTypeValue === 'transit') { arrowLabelSection.innerHTML += `<div class="grid grid-cols-[120px_1fr] items-center gap-3 mt-3"><label for="num-transit-input" class="text-sm font-semibold text-slate-600 text-right"># Transit Comps (N):</label><input type="number" id="num-transit-input" value="4" min="1" class="w-full text-sm rounded-md border-slate-300"></div>`; }
+        diagramSettingsPanel.appendChild(arrowLabelSection);
+        
+        const compSection = document.createElement('div');
+        compSection.innerHTML = `<h3 class="text-lg font-semibold text-slate-700 border-b pb-2 mt-4 flex items-center gap-2"><i class="fa-solid fa-box text-orange-500"></i><span>Compartments</span></h3>`;
+        compsToShow.forEach(compId => { const defaults = defaultCompData[compId]; compSection.innerHTML += `<div class="flex flex-col gap-3 pt-4 border-t border-slate-200 mt-4"><div class="grid grid-cols-[120px_1fr] items-center gap-3"><label for="text-${compId}" class="text-sm font-semibold text-slate-600 text-right">${defaults.t.split(' ')[0]} Text:</label><input type="text" id="text-${compId}" value="${defaults.t}" class="w-full text-sm rounded-md border-slate-300"></div><div class="grid grid-cols-[120px_1fr] items-center gap-3"><label for="color-${compId}" class="text-sm font-semibold text-slate-600 text-right">BG Color:</label><input type="color" id="color-${compId}" value="${defaults.c}" class="w-full h-9 p-0 rounded-md"></div></div>`; });
+        diagramSettingsPanel.appendChild(compSection);
+        
+        diagramSettingsPanel.querySelectorAll('input, select').forEach(input => input.addEventListener('input', drawDiagram));
+    };
+
+    const getModelConfigFromUI = () => {
+        const modelType = modelTypeSelect.value;
+        const getInputValue = (id) => document.getElementById(id)?.value || ''; 
+        const getIntInputValue = (id) => parseInt(document.getElementById(id)?.value, 10);
+        
+        const config = { modelType: modelType, compartments: [], labels: {}, options: {
+            shape: getInputValue('shape-select'), fontFamily: getInputValue('font-family-select') || 'sans-serif',
+            fontSize: getIntInputValue('font-size-input') || 16, textColor: getInputValue('text-color-input') || '#000000',
+            lineColor: getInputValue('line-color-input') || '#333333'
+        }};
+
+        diagramSettingsPanel.querySelectorAll('input[id^="label-"]').forEach(i => { config.labels[i.id.replace('label-', '')] = i.value; });
+        diagramSettingsPanel.querySelectorAll('input[id^="text-"]').forEach(i => { const id = i.id.replace('text-', ''); config.compartments.push({ id: id, text: i.value, color: getInputValue(`color-${id}`) }); });
+
+        if (modelType === 'tmdd') {
+            config.pkModel = { numComp: getIntInputValue('pk-comp-select') || 2, adminType: getInputValue('pk-admin-select') || 'iv' };
+            if (config.pkModel.adminType === 'transit') { config.numTransit = getIntInputValue('num-transit-input') || 4; }
+        } else {
+            config.numComp = getIntInputValue('compartment-select') || 2;
+            config.adminType = getInputValue('admin-select') || 'iv';
+            if (config.adminType === 'transit') { config.numTransit = getIntInputValue('num-transit-input') || 4; } 
+        }
+        return config;
+    };
+
+    const getPlotOptionsFromUI = () => { /* ... Unchanged ... */ };
+    const getSimOptionsFromUI = () => { /* ... Unchanged ... */ };
+    const drawDiagram = () => { graph.drawModel(getModelConfigFromUI(), getPlotOptionsFromUI(), getSimOptionsFromUI()); };
+    const replotOnly = () => { graph.plotter.draw(graph.simulator.solve(getModelConfigFromUI(), getSimOptionsFromUI()), getPlotOptionsFromUI()); };
+    const handleDiagramCanvasResize = () => { mainCanvas.width = parseInt(canvasWidthInput.value, 10) || 900; mainCanvas.height = parseInt(canvasHeightInput.value, 10) || 450; updateOutputDimensionsPreview(); drawDiagram(); };
+    const handlePlotCanvasResize = () => { plotCanvas.width = parseInt(document.getElementById('plot-width').value, 10) || 860; plotCanvas.height = parseInt(document.getElementById('plot-height').value, 10) || 300; replotOnly(); };
+    const updateOutputDimensionsPreview = () => { /* ... Unchanged ... */ };
+    const handleGenericDownload = (canvasId, baseFilename) => { /* ... Unchanged ... */ };
+    const handleReproducibleCodeDownload = () => { /* ... Unchanged ... */ };
+    const handleCodeDownload = (platform) => { /* ... Unchanged ... */ };
+    
+    // --- Event Listeners ---
+    modelTypeSelect.addEventListener('change', () => { updateModelStructureControls(); updateDiagramSettings(); drawDiagram(); });
+    drawButton.addEventListener('click', drawDiagram);
+    plotScaleSelect.addEventListener('change', replotOnly);
+    downloadDiagramButton.addEventListener('click', () => { const config=getModelConfigFromUI(); const modelName = config.modelType === 'tmdd' ? `tmdd-pk${config.pkModel.numComp}comp` : `${config.numComp}-comp-${config.adminType}`; handleGenericDownload('main-canvas', `${modelName}-diagram`); });
+    downloadPlotButton.addEventListener('click', () => { const config=getModelConfigFromUI(); const modelName = config.modelType === 'tmdd' ? `tmdd-pk${config.pkModel.numComp}comp` : `${config.numComp}-comp-${config.adminType}`; handleGenericDownload('plot-canvas', `${modelName}-plot`); });
+    downloadCodeButton.addEventListener('click', handleReproducibleCodeDownload);
+    canvasWidthInput.addEventListener('input', handleDiagramCanvasResize);
+    canvasHeightInput.addEventListener('input', handleDiagramCanvasResize);
+    imageScaleInput.addEventListener('input', updateOutputDimensionsPreview);
+    downloadNonmemButton.addEventListener('click', () => handleCodeDownload('nonmem'));
+    downloadMonolixButton.addEventListener('click', () => handleCodeDownload('monolix'));
+    downloadRButton.addEventListener('click', () => handleCodeDownload('r'));
+
+    // --- Initial Setup ---
+    setupTabs();
+    populatePlotSettings();
+    updateModelStructureControls();
+    updateDiagramSettings();
+    drawDiagram();
+    updateOutputDimensionsPreview();
+});
