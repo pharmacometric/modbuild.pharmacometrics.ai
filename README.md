@@ -1,4 +1,4 @@
-# modbuild.pharmacometrics.ai
+# [PK/PD Model Builder : modbuild.pharmacometrics.ai](https://modbuild.pharmacometrics.ai/)
 AI Generated Model Builder with Help from William
 
 # How to use
