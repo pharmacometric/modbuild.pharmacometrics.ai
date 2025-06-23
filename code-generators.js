@@ -8,7 +8,6 @@ function generateNonmemCode(config) {
     const today = new Date().toISOString().split('T')[0];
     let header, problem, input, data, subroutines, model, pk, error, theta, omega, sigma, estimation, table;
 
-    // Default sections
     input = `$INPUT ID TIME DV AMT EVID MDV CMT`;
     data = `$DATA data.csv IGNORE=@`;
     error = `$ERROR\nY = F * (1 + ERR(1)) + ERR(2)\nIPRED = F`;
@@ -18,55 +17,62 @@ function generateNonmemCode(config) {
     if (modelType === 'tmdd') {
         const { pkModel, numTransit = 4 } = config;
         const { numComp, adminType } = pkModel;
+        const modelName = `tmdd_pk${numComp}c_${adminType}`;
 
-        problem = `$PROBLEM TMDD Model with ${numComp}-Comp PK and ${adminType} admin`;
-        header = `;; Model: ${problem.replace('$PROBLEM ', '')}\n;; Author: William Hane\n;; Date: ${today}`;
+        problem = `$PROBLEM ${modelName}`;
+        header = `;; Model: Target-Mediated Drug Disposition\n;; PK: ${numComp}-Compartment, ${adminType} administration\n;; Author: William Hane\n;; Date: ${today}`;
         
-        const pkParams = (numComp === 1) ? ['CL', 'V1'] : ['CL', 'V1', 'Q', 'V2'];
-        const tmddParams = ['KINT', 'KON', 'KOFF', 'KSYN', 'KDEG'];
+        const pkParams = (numComp === 1) ? ['CL', 'V1'] : ['CL', 'V1', 'Q2', 'V2'];
+        const tmddParams = ['KON', 'KOFF', 'KINT', 'KSYN', 'KDEG'];
         let adminParams = [];
-        if(adminType === 'oral') adminParams = ['KA'];
-        if(adminType === 'transit') adminParams = ['MTT'];
+        if (adminType === 'oral') adminParams = ['KA'];
+        if (adminType === 'transit') adminParams = ['MTT'];
         
         const allParams = [...adminParams, ...pkParams, ...tmddParams];
         
         subroutines = `$SUBROUTINES ADVAN13`;
-        model = `COMP=(DEPOT,DEFDOS) COMP=(CENTRAL,DEFOBS) COMP=(PERIPH) COMP=(RECEPTOR) COMP=(COMPLEX)`;
-        if(adminType === 'transit') model = `N_TRANSIT=${numTransit} ${model}`;
+        let compDef = `COMP=(DEPOT, DEFDOS) COMP=(CENTRAL, DEFOBS) `;
+        if(numComp > 1) compDef += `COMP=(PERIPH) `;
+        compDef += `COMP=(RECEPTOR) COMP=(COMPLEX)`;
+        model = `$MODEL N_TRANSIT=${adminType === 'transit' ? numTransit : 0} ${compDef}`;
         
+        const cmtMap = { CENT: 2, PERIPH: 3, RECEPTOR: 4, COMPLEX: 5 };
+        if (numComp === 1) { cmtMap.RECEPTOR = 3; cmtMap.COMPLEX = 4; }
+
         pk = `$PK
 ; THETAS: ${allParams.join(', ')}
 ${allParams.map((p, i) => `${p} = THETA(${i+1}) * EXP(ETA(${i+1}))`).join('\n')}
 
-; TMDD equations
-K10 = CL/V1
+; Micro-rate constants
+KEL = CL/V1
 K12 = 0
 K21 = 0
-IF (NPARAM.GE.5) K12 = Q/V1
-IF (NPARAM.GE.5) K21 = Q/V2
+IF (NPARAM.GE.${adminParams.length + 3}) K12 = Q2/V1
+IF (NPARAM.GE.${adminParams.length + 4}) K21 = Q2/V2
 
 ; Rates for ADVAN13
-E_R = KSYN - KDEG*A(4) - KON*A(2)*A(4) + KOFF*A(5)
-E_LR = KON*A(2)*A(4) - KOFF*A(5) - KINT*A(5)
+E_R = KSYN - KDEG*A(${cmtMap.RECEPTOR}) - KON*A(${cmtMap.CENT})*A(${cmtMap.RECEPTOR}) + KOFF*A(${cmtMap.COMPLEX})
+E_LR = KON*A(${cmtMap.CENT})*A(${cmtMap.RECEPTOR}) - KOFF*A(${cmtMap.COMPLEX}) - KINT*A(${cmtMap.COMPLEX})
 
 ; SCALING
-S2 = V1  ; Scales CENT to Concentration
-S4 = 1   ; Receptor amount
-S5 = 1   ; Complex amount
+S2 = V1 ; Scales CENT to Concentration
+S${cmtMap.RECEPTOR} = 1   ; Receptor amount
+S${cmtMap.COMPLEX} = 1   ; Complex amount
 `;
         if (adminType === 'transit') pk += `\nN = ${numTransit}\nKTR = (N+1)/MTT\nD1 = MTT\nF1=1`;
         if (adminType === 'oral') pk += `\nF1=1`;
 
         theta = `$THETA\n${allParams.map(p => `(0, 1) ; ${p}`).join('\n')}`;
         omega = `$OMEGA\n${allParams.map((p, i) => `(0.09) ; BSV on ${p}`).join('\n')}`;
-        table = `$TABLE ID TIME EVID AMT CMT DV IPRED NOPRINT ONEHEADER FILE=tmdd.tab`;
+        table = `$TABLE ID TIME EVID AMT CMT DV IPRED NOPRINT ONEHEADER FILE=${modelName}.tab`;
 
     } else { // Standard PK
         const { numComp, adminType, numTransit = 4 } = config;
-        problem = `$PROBLEM ${numComp}-Compartment Model with ${adminType} administration`;
-        header = `;; Model: ${problem.replace('$PROBLEM ', '')}\n;; Author: William Hane\n;; Date: ${today}`;
+        const modelName = `${numComp}comp_${adminType}`;
+        problem = `$PROBLEM ${modelName}`;
+        header = `;; Model: ${numComp}-Compartment Model with ${adminType} administration\n;; Author: William Hane\n;; Date: ${today}`;
 
-        const pkParams = { iv: {1:['CL','V'], 2:['CL','V1','Q','V2'], 3:['CL','V1','Q2','V2','Q3','V3']}, oral: {1:['KA','CL','V'], 2:['KA','CL','V1','Q','V2'], 3:['KA','CL','V1','Q2','V2','Q3','V3']}, transit: {1:['MTT','CL','V'], 2:['MTT','CL','V1','Q','V2'], 3:['MTT','CL','V1','Q2','V2','Q3','V3']} };
+        const pkParams = { iv: {1:['CL','V'], 2:['CL','V1','Q2','V2'], 3:['CL','V1','Q2','V2','Q3','V3']}, oral: {1:['KA','CL','V'], 2:['KA','CL','V1','Q2','V2'], 3:['KA','CL','V1','Q2','V2','Q3','V3']}, transit: {1:['MTT','CL','V'], 2:['MTT','CL','V1','Q2','V2'], 3:['MTT','CL','V1','Q2','V2','Q3','V3']} };
         const params = pkParams[adminType][numComp];
         
         if (adminType !== 'transit' && numComp < 3) {
@@ -94,14 +100,174 @@ S5 = 1   ; Complex amount
 
         theta = `$THETA\n${params.map(p => `(0, 1) ; ${p}`).join('\n')}`;
         omega = `$OMEGA\n${params.map((p, i) => `(0.09) ; BSV on ${p}`).join('\n')}`;
-        table = `$TABLE ID TIME EVID AMT CMT DV IPRED NOPRINT ONEHEADER FILE=${numComp}comp_${adminType}.tab`;
+        table = `$TABLE ID TIME EVID AMT CMT DV IPRED NOPRINT ONEHEADER FILE=${modelName}.tab`;
     }
 
-    return [header, problem, input, data, subroutines, model, pk, error, theta, omega, sigma, estimation, table]
-        .filter(Boolean) // Remove empty sections
-        .join('\n\n');
+    return [header, problem, input, data, subroutines, model, pk, error, theta, omega, sigma, estimation, table].filter(Boolean).join('\n\n');
+}
+
+function generateMonolixCode(config) {
+    const { modelType } = config;
+    const today = new Date().toISOString().split('T')[0];
+    let header, individual, longitudinal, parameter;
+
+    if (modelType === 'tmdd') {
+        const { pkModel, numTransit = 4 } = config;
+        const { numComp, adminType } = pkModel;
+        header = `DESCRIPTION: TMDD model with ${numComp}-Comp PK (${adminType})`;
+        
+        const pkParams = (numComp === 1) ? ['Cl','V1'] : ['Cl','V1','Q2','V2'];
+        const tmddParams = ['kon','koff','kint','ksyn','kdeg'];
+        let adminParams = [];
+        if(adminType === 'oral') adminParams = ['ka'];
+        if(adminType === 'transit') adminParams = ['Mtt', 'Ntr'];
+
+        const allParams = [...adminParams, ...pkParams, ...tmddParams];
+
+        individual = `DEFINITION:\n` + allParams.map(p => `${p} = {distribution=lognormal, typical=${p}_pop, sd=omega_${p}}`).join('\n');
+        parameter = `<PARAMETER>\n` + allParams.map(p => `${p}_pop = 1`).join('\n') + '\n' + allParams.map(p => `omega_${p} = 0.3`).join('\n') + `\n${adminType==='transit' ? `Ntr=${numTransit}\n` : ''}a=1\nb=0.1`;
+
+        let pkMacro;
+        if (adminType === 'iv') pkMacro = `iv(adm=1, cmt=A_c)`;
+        else if (adminType === 'oral') pkMacro = `depot(adm=1, cmt=A_c, ka)`;
+        else pkMacro = `transit(adm=1, cmt=A_c, Mtt, Ntr)`;
+
+        let odeBlock = `
+k_el = Cl/V1
+k_12 = 0
+k_21 = 0
+if ${numComp} == 2
+k_12 = Q2/V1
+k_21 = Q2/V2
+end
+ddt_A_c = -(k_el + k_12)*A_c + k_21*A_p - kon*A_c*R + koff*LR
+ddt_R = ksyn - kdeg*R - kon*A_c*R + koff*LR
+ddt_LR = kon*A_c*R - koff*LR - kint*LR
+`;
+        if (numComp === 2) odeBlock += `ddt_A_p = k_12*A_c - k_21*A_p\n`;
+        odeBlock += `Cc = A_c/V1`;
+
+        longitudinal = `[LONGITUDINAL]\ninput = {${allParams.join(', ')}}\n\nPK:\n${pkMacro}\ncompartment(amount=R)\ncompartment(amount=LR)\n${numComp > 1 ? 'compartment(amount=A_p)' : ''}\n\nEQUATION:${odeBlock}\n\nDEFINITION:\nC = {distribution=normal, prediction=Cc, errorModel=combined1(a,b)}`;
+
+    } else { // Standard PK
+        const { numComp, adminType, numTransit = 4 } = config;
+        header = `DESCRIPTION: ${numComp}-Compartment Model with ${adminType} administration`;
+        
+        const pkParams = { iv: {1:['Cl','V'], 2:['Cl','V1','Q','V2'], 3:['Cl','V1','Q','V2','Q3','V3']}, oral: {1:['ka','Cl','V'], 2:['ka','Cl','V1','Q','V2'], 3:['ka','Cl','V1','Q','V2','Q3','V3']}, transit: {1:['Mtt','Cl','V'], 2:['Mtt','Cl','V1','Q','V2'], 3:['Mtt','Cl','V1','Q','V2','Q3','V3']} };
+        const params = pkParams[adminType][numComp];
+        if (adminType === 'transit') params.push('Ntr');
+        
+        individual = `DEFINITION:\n` + params.map(p => `${p} = {distribution=lognormal, typical=${p}_pop, sd=omega_${p}}`).join('\n');
+        parameter = `<PARAMETER>\n` + params.map(p => `${p}_pop = 1`).join('\n') + '\n' + params.map(p => `omega_${p} = 0.3`).join('\n') + `\n${adminType==='transit' ? `Ntr=${numTransit}\n` : ''}a=1\nb=0.1`;
+        
+        let pkMacro = (adminType === 'iv') ? 'iv(cmt=1)' : (adminType === 'oral') ? 'depot(target=A1, ka)' : `transit(cmt=1, Mtt, Ntr)`;
+        
+        let odeBlock = ``;
+        if (numComp === 1) odeBlock = `k=Cl/V\nddt_A1 = -k*A1\nCc=A1/V`;
+        if (numComp === 2) odeBlock = `k=Cl/V1; k12=Q/V1; k21=Q/V2\nddt_A1=-(k+k12)*A1+k21*A2\nddt_A2=k12*A1-k21*A2\nCc=A1/V1`;
+        if (numComp === 3) odeBlock = `k=Cl/V1; k12=Q/V1; k21=Q/V2; k13=Q3/V1; k31=Q3/V3\nddt_A1=-(k+k12+k13)*A1+k21*A2+k31*A3\nddt_A2=k12*A1-k21*A2\nddt_A3=k13*A1-k31*A3\nCc=A1/V1`;
+
+        longitudinal = `[LONGITUDINAL]\ninput = {${params.join(', ')}}\n\nPK:\n${pkMacro}\n${numComp > 1 ? 'compartment(cmt=2, amount=A2)' : ''}\n${numComp > 2 ? 'compartment(cmt=3, amount=A3)' : ''}\n\nEQUATION:\n${odeBlock}\n\nDEFINITION:\nC = {distribution=normal, prediction=Cc, errorModel=combined1(a,b)}`;
+    }
+    
+    return `;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;\n; Author: William Hane\n; Date: ${today}\n;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;\n\n${header}\n\n<MODEL>\n\n[INDIVIDUAL]\n${individual}\n\n${longitudinal}\n\n${parameter}\n\n<DESIGN>\n; Specify your study design here\n\n<FIT>\ndata = ...\nsettings = ...\n`;
 }
 
 
-function generateMonolixCode(config) { /* ... Unchanged from final version ... */ }
-function generateRCode(config) { /* ... Unchanged from final version ... */ }
+function generateRCode(config) {
+    const { modelType } = config;
+    let code, params, cmtBlock, mainBlock, odeBlock, doseCmt, V, simExtras = '';
+
+    if (modelType === 'tmdd') {
+        const { pkModel, numTransit = 4 } = config;
+        const { numComp, adminType } = pkModel;
+        
+        params = (numComp === 1) ? ['CL','V1'] : ['CL','V1','Q2','V2'];
+        params.push('KON','KOFF','KINT','KSYN','KDEG');
+        if(adminType === 'oral') params.unshift('KA');
+        if(adminType === 'transit') { params.unshift('MTT'); params.push('N'); }
+        
+        cmtBlock = `CENTRAL\nRECEPTOR\nCOMPLEX\n`;
+        if (numComp > 1) cmtBlock += `PERIPH1\n`;
+        if (adminType.includes('oral') || adminType.includes('transit')) cmtBlock = 'GUT\n' + cmtBlock;
+        if (adminType === 'transit') { const transitCmts = Array.from({length: numTransit}, (_,i) => `TRANS${i+1}`).join('\n'); cmtBlock = `GUT\n${transitCmts}\n` + cmtBlock.replace('GUT\n','');}
+
+        mainBlock = `double KEL = CL/V1;\ndouble K12 = 0, K21 = 0;\nif(${numComp} > 1) { K12 = Q2/V1; K21 = Q2/V2; }`;
+        if (adminType === 'transit') mainBlock += `\ndouble KTR = (N+1)/MTT;`;
+
+        odeBlock = `
+dxdt_CENTRAL = -KEL*CENTRAL - K12*CENTRAL + K21*PERIPH1 - KON*CENTRAL*RECEPTOR + KOFF*COMPLEX;
+dxdt_RECEPTOR = KSYN - KDEG*RECEPTOR - KON*CENTRAL*RECEPTOR + KOFF*COMPLEX;
+dxdt_COMPLEX = KON*CENTRAL*RECEPTOR - KOFF*COMPLEX - KINT*COMPLEX;
+`;
+        if (numComp > 1) odeBlock += `dxdt_PERIPH1 = K12*CENTRAL - K21*PERIPH1;\n`;
+        
+        if (adminType === 'oral') odeBlock = `dxdt_GUT = -KA*GUT;\ndxdt_CENTRAL += KA*GUT;\n` + odeBlock.replace('dxdt_CENTRAL +=', 'dxdt_CENTRAL =');
+        if (adminType === 'transit') {
+            let transitODEs = `dxdt_GUT = -KTR*GUT;\ndxdt_TRANS1 = KTR*GUT - KTR*TRANS1;\n`;
+            for(let i=2; i<=numTransit; ++i) { transitODEs += `dxdt_TRANS${i} = KTR*TRANS${i-1} - KTR*TRANS${i};\n`; }
+            odeBlock = transitODEs + `dxdt_CENTRAL += KTR*TRANS${numTransit};\n` + odeBlock.replace('dxdt_CENTRAL +=', 'dxdt_CENTRAL =');
+        }
+
+        V = 'V1';
+        doseCmt = (adminType === 'iv') ? 'CENTRAL' : 'GUT';
+        if (adminType === 'transit') simExtras = `param(N = ${numTransit}) %>%`;
+
+    } else { // Standard PK
+        const { numComp, adminType, numTransit = 4 } = config;
+        const pkParams = { iv: {1:['CL','V'], 2:['CL','V1','Q2','V2'], 3:['CL','V1','Q2','V2','Q3','V3']}, oral: {1:['KA','CL','V'], 2:['KA','CL','V1','Q2','V2'], 3:['KA','CL','V1','Q2','V2','Q3','V3']}, transit: {1:['MTT','CL','V'], 2:['MTT','CL','V1','Q2','V2'], 3:['MTT','CL','V1','Q2','V2','Q3','V3']} };
+        params = pkParams[adminType][numComp];
+        if (adminType === 'transit') params.push('N');
+        
+        cmtBlock = 'CENT\n';
+        if (adminType.includes('oral') || adminType.includes('transit')) cmtBlock = 'GUT\n' + cmtBlock;
+        if (adminType === 'transit') { const transitCmts = Array.from({length: numTransit}, (_,i) => `TRANS${i+1}`).join('\n'); cmtBlock = `GUT\n${transitCmts}\n` + cmtBlock.replace('GUT\n','');}
+        if(numComp > 1) cmtBlock += `PERIPH1\n`; if(numComp > 2) cmtBlock += `PERIPH2\n`;
+        
+        V = numComp > 1 ? 'V1' : 'V';
+        mainBlock = `double K10 = CL/${V};\n`;
+        if(numComp > 1) mainBlock += `double K12 = Q2/${V}; double K21 = Q2/V2;\n`;
+        if(numComp > 2) mainBlock += `double K13 = Q3/${V}; double K31 = Q3/V3;\n`;
+        if(adminType === 'transit') mainBlock += `double KTR = (N+1)/MTT;\n`;
+        
+        odeBlock = `dxdt_CENT = -K10*CENT;\n`;
+        if(numComp > 1) odeBlock = `dxdt_CENT = -(K10+K12)*CENT + K21*PERIPH1;\ndxdt_PERIPH1 = K12*CENT - K21*PERIPH1;\n`;
+        if(numComp > 2) odeBlock = `dxdt_CENT = -(K10+K12+K13)*CENT + K21*PERIPH1 + K31*PERIPH2;\ndxdt_PERIPH1 = K12*CENT - K21*PERIPH1;\ndxdt_PERIPH2 = K13*CENT - K31*PERIPH2;\n`;
+        
+        if(adminType === 'oral') { odeBlock = `dxdt_GUT = -KA*GUT;\ndxdt_CENT += KA*GUT;\n` + odeBlock.replace('dxdt_CENT +=', 'dxdt_CENT ='); } 
+        else if (adminType === 'transit') { let transitODEs = `dxdt_GUT = -KTR*GUT;\ndxdt_TRANS1 = KTR*GUT - KTR*TRANS1;\n`; for(let i=2; i<=numTransit; ++i) { transitODEs += `dxdt_TRANS${i} = KTR*TRANS${i-1} - KTR*TRANS${i};\n`; } odeBlock = transitODEs + `dxdt_CENT += KTR*TRANS${numTransit};\n` + odeBlock.replace('dxdt_CENT +=', 'dxdt_CENT ='); }
+        
+        doseCmt = adminType === 'iv' ? 'CENT' : 'GUT';
+        if (adminType === 'transit') simExtras = `param(N = ${numTransit}) %>%`;
+    }
+
+    return `
+# Load required libraries
+library(mrgsolve)
+library(ggplot2)
+
+# Define the model code
+code <- '
+[PARAM] @annotated
+${params.map(p => `${p} : 1 : Parameter description`).join('\n')}
+
+[CMT] @annotated
+${cmtBlock}
+[MAIN]
+${mainBlock}
+[ODE]
+${odeBlock}
+[TABLE]
+double CP = CENTRAL/${V};
+'
+
+# Compile and run simulation
+mod <- mread(code = code)
+
+mod %>%
+  ${simExtras}
+  ev(amt = 100, cmt = "${doseCmt}") %>%
+  mrgsim(end = 48, delta = 0.1) %>%
+  plot(CP ~ time)
+`;
+}
