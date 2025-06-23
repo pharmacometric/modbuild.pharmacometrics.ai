@@ -52,14 +52,14 @@
                         <button class="tab-button shrink-0 border-b-2 px-4 py-3 text-sm font-medium" data-tab="selected-model">Selected Model</button>
                         <button class="tab-button shrink-0 border-b-2 px-4 py-3 text-sm font-medium" data-tab="diagram-settings">Diagram Settings</button>
                         <button class="tab-button shrink-0 border-b-2 px-4 py-3 text-sm font-medium" data-tab="plot-settings">Plot Settings</button>
-                        <button class="tab-button shrink-0 border-b-2 px-4 py-3 text-sm font-medium" data-tab="how-to-use">Help</button>
+                        <button class="tab-button shrink-0 border-b-2 px-4 py-3 text-sm font-medium" data-tab="help">Help</button>
                     </nav>
                 </div>
                 <div class="p-6">
                     <div class="tab-panel" id="selected-model-panel"></div>
                     <div class="tab-panel hidden" id="diagram-settings-panel"></div>
                     <div class="tab-panel hidden" id="plot-settings-panel"></div>
-                    <div class="tab-panel hidden" id="how-to-use-panel">
+                    <div class="tab-panel hidden" id="help-panel">
                         <div class="prose max-w-none prose-sm">
                             <h3 class="font-bold text-lg mb-2">Welcome to the PK/PD Visualizer!</h3>
                             <p>This application helps you visualize, simulate, and generate code for various pharmacokinetic models, including standard and Target-Mediated Drug Disposition (TMDD) models.</p>
@@ -69,7 +69,7 @@
                                 <li><strong>View Model Details:</strong> The "Selected Model" tab provides a textual description of the current model's components and assumptions.</li>
                                 <li><strong>Customize Diagram & Plot:</strong> Use the "Diagram Settings" and "Plot Settings" tabs to customize every aspect of the visuals.</li>
                                 <li><strong>View Results:</strong> The diagram and plot in the center panel update automatically as you make changes.</li>
-                                <li><strong>Export:</strong> Use the right-hand panel to download high-quality images, reproducible code for the visualizer, or model code for NONMEM, Monolix, and R.</li>
+                                <li><strong>Export:</strong> Use the right-hand panel to download high-quality images, reproducible code, or model code for NONMEM, Monolix, and R.</li>
                             </ol>
                         </div>
                     </div>
@@ -97,7 +97,7 @@
         <!-- Right Column: Exports (remaining space) -->
         <div class="bg-white shadow-lg p-6 flex flex-col gap-6 border border-slate-300 flex-grow" style="min-width: 350px;">
             <h2 class="text-lg font-semibold text-slate-700 border-b pb-2 flex items-center gap-2"><i class="fa-solid fa-file-image text-green-600"></i><span>Export Image</span></h2>
-            <div class="grid grid-cols-[120px_1fr] items-center gap-3"><label for="canvas-width-input" class="text-sm font-semibold text-slate-600 text-right">Diagram Width:</label><input type="number" id="canvas-width-input" value="700" min="200" step="10" class="w-full text-sm rounded-md border-slate-300"></div>
+            <div class="grid grid-cols-[120px_1fr] items-center gap-3"><label for="canvas-width-input" class="text-sm font-semibold text-slate-600 text-right">Diagram Width:</label><input type="number" id="canvas-width-input" value="900" min="200" step="10" class="w-full text-sm rounded-md border-slate-300"></div>
             <div class="grid grid-cols-[120px_1fr] items-center gap-3"><label for="canvas-height-input" class="text-sm font-semibold text-slate-600 text-right">Diagram Height:</label><input type="number" id="canvas-height-input" value="450" min="200" step="10" class="w-full text-sm rounded-md border-slate-300"></div>
             <div class="grid grid-cols-[120px_1fr] items-center gap-3"><label for="image-format-select" class="text-sm font-semibold text-slate-600 text-right">Format:</label><select id="image-format-select" class="w-full text-sm rounded-md border-slate-300"><option value="png">PNG</option><option value="jpeg">JPG</option></select></div>
             <div class="grid grid-cols-[120px_1fr] items-center gap-3"><label for="image-scale-input" class="text-sm font-semibold text-slate-600 text-right">Scale Factor:</label><input type="number" id="image-scale-input" value="3" min="1" step="0.5" class="w-full text-sm rounded-md border-slate-300"></div>
