@@ -52,7 +52,7 @@
                         <button class="tab-button shrink-0 border-b-2 px-4 py-3 text-sm font-medium" data-tab="selected-model">Selected Model</button>
                         <button class="tab-button shrink-0 border-b-2 px-4 py-3 text-sm font-medium" data-tab="diagram-settings">Diagram Settings</button>
                         <button class="tab-button shrink-0 border-b-2 px-4 py-3 text-sm font-medium" data-tab="plot-settings">Plot Settings</button>
-                        <button class="tab-button shrink-0 border-b-2 px-4 py-3 text-sm font-medium" data-tab="how-to-use">How to Use</button>
+                        <button class="tab-button shrink-0 border-b-2 px-4 py-3 text-sm font-medium" data-tab="how-to-use">Help</button>
                     </nav>
                 </div>
                 <div class="p-6">
@@ -81,7 +81,7 @@
         <div class="flex flex-col gap-8" style="width: 45%; min-width: 400px;">
             <div class="bg-slate-300 shadow-lg p-4 border border-slate-300" style="overflow-x:scroll">
             <canvas id="main-canvas" width="700" height="450" class="bg-white"></canvas>
-			</div><div class="bg-white shadow-lg p-4 border border-slate-300">
+			</div><div class="bg-white shadow-lg p-4 border border-slate-300" style="overflow-x:scroll">
                  <div class="flex justify-between items-center mb-2">
                      <div class="w-1/3"></div>
                      <h3 class="w-1/3 text-lg font-semibold text-slate-700 text-center">Simulated C vs. Time</h3>
@@ -90,7 +90,7 @@
                          <select id="plot-scale-select" class="text-xs rounded-md border-slate-300 p-1"><option value="linear" selected>Linear</option><option value="log">Semi-log</option></select>
                      </div>
                  </div>
-                 <canvas id="plot-canvas" width="860" height="300" class="w-full"></canvas>
+                 <canvas id="plot-canvas" width="700" height="300" class="w-xfull"></canvas>
             </div>
         </div>
 
