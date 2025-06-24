@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div><label class="block text-sm">Line Color:<input type="color" id="plot-linecolor" value="#007bff" class="mt-1 w-full h-9 p-0 rounded-md"></label></div>
                     </div>
                      <div class="grid grid-cols-2 gap-4 mt-4">
-                         <label class="block text-sm">Width (px):<input type="number" id="plot-width" value="860" min="200" step="10" class="mt-1 w-full text-sm rounded-md border-slate-300"></label>
+                         <label class="block text-sm">Width (px):<input type="number" id="plot-width" value="700" min="200" step="10" class="mt-1 w-full text-sm rounded-md border-slate-300"></label>
                          <label class="block text-sm">Height (px):<input type="number" id="plot-height" value="300" min="200" step="10" class="mt-1 w-full text-sm rounded-md border-slate-300"></label>
                      </div>
                 </div>
