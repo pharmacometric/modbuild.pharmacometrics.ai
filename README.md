@@ -1,5 +1,5 @@
 # [PK/PD Model Builder : modbuild.pharmacometrics.ai](https://modbuild.pharmacometrics.ai/)
-AI Generated Model Builder with Help from William
+AI Generated Model Builder with Help from William (Tokens: 516,221)
 
 # How to use
 ```
