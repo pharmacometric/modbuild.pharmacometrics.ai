@@ -6,6 +6,8 @@ AI Generated Model Builder with Help from William
 Download repo and run HTML file
 ```
 
+![](pmxvisualizer.png)
+
 # Welcome to the PK/PD Visualizer!
 
 This application helps you visualize, simulate, and generate code for various pharmacokinetic models, including standard and Target-Mediated Drug Disposition (TMDD) models.
