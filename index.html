@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+  <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PK/PD Model Visualizer & Simulator</title>
@@ -14,113 +14,165 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-</head>
-<body class="bg-slate-100">
-
+  </head>
+  <body class="bg-slate-100">
     <header class="w-full bg-stone-800 text-stone-50 shadow-md p-4 mb-8">
-        <div class="max-w-7xl mx-auto">
-		<h1 class="text-3xl font-bold texts-slate-800 flex items-center gap-3"><a href="./"><img alt="Pharmacometrics AI" src="https://pharmacometrics.ai/logo_pmx10.png" width="250"></a><i class="fa-solid fa-capsules text-amber-200"></i><span>Model Visualizer & Simulator</span></h1></div>
+      <div class="max-w-7xl mx-auto">
+        <h1 class="text-3xl font-bold texts-slate-800 flex items-center gap-3">
+          <a href="./">
+            <img alt="Pharmacometrics AI" src="https://pharmacometrics.ai/logo_pmx10.png" width="250">
+          </a>
+          <i class="fa-solid fa-capsules text-amber-200"></i>
+          <span>Model Visualizer & Simulator</span>
+        </h1>
+      </div>
     </header>
-
     <main class="flex flex-wrap justify-center items-start px-8 gap-2">
-
-        <!-- Left Column: All Controls (30%) -->
-        <div class="flex flex-col gap-8" style="width: 30%; min-width: 400px;">
-            <div class="bg-white shadow-lg p-6 border border-slate-300">
-                <h2 class="text-2xl font-bold text-slate-800 text-center border-b pb-3 mb-4 flex items-center justify-center gap-2"><i class="fa-solid fa-sitemap text-blue-600"></i><span>Model Library</span></h2>
-                
-                <div class="mb-4">
-                    <label for="model-type-select" class="block text-sm font-semibold text-slate-600 mb-1">Model Type</label>
-                    <select id="model-type-select" class="w-full text-sm rounded-md border-slate-300">
-                        <option value="pk" selected>Standard PK</option>
-                        <option value="tmdd">TMDD model</option>
-                    </select>
-                </div>
-
-                <div id="model-structure-controls">
-                    <!-- This will be populated by JS -->
-                </div>
-                
-                <button id="draw-button" class="w-full mt-6 py-2.5 px-4 bg-blue-600 text-white font-bold rounded-lg shadow-md hover:bg-blue-700 transition-colors flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-paintbrush"></i><span>Draw / Update Model</span>
-                </button>
-            </div>
-
-            <!-- Tabset Container -->
-            <div class="bg-white shadow-lg border border-slate-300">
-                <div class="border-b border-slate-200">
-                    <nav class="-mb-px flex gap-6" aria-label="Tabs">
-                        <button class="tab-button shrink-0 border-b-2 px-4 py-3 text-sm font-medium" data-tab="selected-model">Selected Model</button>
-                        <button class="tab-button shrink-0 border-b-2 px-4 py-3 text-sm font-medium" data-tab="diagram-settings">Diagram Settings</button>
-                        <button class="tab-button shrink-0 border-b-2 px-4 py-3 text-sm font-medium" data-tab="plot-settings">Plot Settings</button>
-                        <button class="tab-button shrink-0 border-b-2 px-4 py-3 text-sm font-medium" data-tab="help">Help</button>
-                    </nav>
-                </div>
-                <div class="p-6">
-                    <div class="tab-panel" id="selected-model-panel"></div>
-                    <div class="tab-panel hidden" id="diagram-settings-panel"></div>
-                    <div class="tab-panel hidden" id="plot-settings-panel"></div>
-                    <div class="tab-panel hidden" id="help-panel">
-                        <div class="prose max-w-none prose-sm">
-                            <h3 class="font-bold text-lg mb-2">Welcome to the PK/PD Visualizer!</h3>
-                            <p>This application helps you visualize, simulate, and generate code for various pharmacokinetic models, including standard and Target-Mediated Drug Disposition (TMDD) models.</p>
-                            <h4 class="font-semibold mt-4 mb-1">How It Works:</h4>
-                            <ol class="list-decimal list-inside space-y-2">
-                                <li><strong>Select a Model:</strong> Use the "Model Library" panel to choose a model type and configure its specific structure.</li>
-                                <li><strong>View Model Details:</strong> The "Selected Model" tab provides a textual description of the current model's components and assumptions.</li>
-                                <li><strong>Customize Diagram & Plot:</strong> Use the "Diagram Settings" and "Plot Settings" tabs to customize every aspect of the visuals.</li>
-                                <li><strong>View Results:</strong> The diagram and plot in the center panel update automatically as you make changes.</li>
-                                <li><strong>Export:</strong> Use the right-hand panel to download high-quality images, reproducible code, or model code for NONMEM, Monolix, and R.</li>
-                            </ol>
-                        </div>
-                    </div>
-                </div>
-            </div>
+      <!-- Left Column: All Controls (30%) -->
+      <div class="flex flex-col gap-8" style="width: 30%; min-width: 400px;">
+        <div class="bg-white shadow-lg p-6 border border-slate-300">
+          <h2 class="text-2xl font-bold text-slate-800 text-center border-b pb-3 mb-4 flex items-center justify-center gap-2">
+            <i class="fa-solid fa-sitemap text-blue-600"></i>
+            <span>Model Library</span>
+          </h2>
+          <div class="mb-4">
+            <label for="model-type-select" class="block text-sm font-semibold text-slate-600 mb-1">Model Type</label>
+            <select id="model-type-select" class="w-full text-sm rounded-md border-slate-300">
+              <option value="pk" selected>Standard PK</option>
+              <option value="tmdd">TMDD model</option>
+            </select>
+          </div>
+          <div id="model-structure-controls">
+            <!-- This will be populated by JS -->
+          </div>
+          <button id="draw-button" class="w-full mt-6 py-2.5 px-4 bg-blue-600 text-white font-bold rounded-lg shadow-md hover:bg-blue-700 transition-colors flex items-center justify-center gap-2">
+            <i class="fa-solid fa-paintbrush"></i>
+            <span>Draw / Update Model</span>
+          </button>
         </div>
-
-        <!-- Center Column: Visuals (45%) -->
-        <div class="flex flex-col gap-8" style="width: 45%; min-width: 400px;">
-            <div class="bg-slate-300 shadow-lg p-4 border border-slate-300" style="overflow-x:scroll">
-            <canvas id="main-canvas" width="700" height="450" class="bg-white"></canvas>
-			</div><div class="bg-white shadow-lg p-4 border border-slate-300" style="overflow-x:scroll">
-                 <div class="flex justify-between items-center mb-2">
-                     <div class="w-1/3"></div>
-                     <h3 class="w-1/3 text-lg font-semibold text-slate-700 text-center">Simulated C vs. Time</h3>
-                     <div class="w-1/3 text-right">
-                         <label for="plot-scale-select" class="text-xs font-semibold text-slate-500">Scale:</label>
-                         <select id="plot-scale-select" class="text-xs rounded-md border-slate-300 p-1"><option value="linear" selected>Linear</option><option value="log">Semi-log</option></select>
-                     </div>
-                 </div>
-                 <canvas id="plot-canvas" width="700" height="300" class="w-xfull"></canvas>
+        <!-- Tabset Container -->
+        <div class="bg-white shadow-lg border border-slate-300">
+          <div class="border-b border-slate-200">
+            <nav class="-mb-px flex gap-6" aria-label="Tabs">
+              <button class="tab-button shrink-0 border-b-2 px-4 py-3 text-sm font-medium" data-tab="selected-model">Selected Model</button>
+              <button class="tab-button shrink-0 border-b-2 px-4 py-3 text-sm font-medium" data-tab="diagram-settings">Diagram Settings</button>
+              <button class="tab-button shrink-0 border-b-2 px-4 py-3 text-sm font-medium" data-tab="plot-settings">Plot Settings</button>
+              <button class="tab-button shrink-0 border-b-2 px-4 py-3 text-sm font-medium" data-tab="help">Help</button>
+            </nav>
+          </div>
+          <div class="p-6">
+            <div class="tab-panel" id="selected-model-panel"></div>
+            <div class="tab-panel hidden" id="diagram-settings-panel"></div>
+            <div class="tab-panel hidden" id="plot-settings-panel"></div>
+            <div class="tab-panel hidden" id="help-panel">
+              <div class="prose max-w-none prose-sm">
+                <h3 class="font-bold text-lg mb-2">Welcome to the PK/PD Visualizer!</h3>
+                <p>This application helps you visualize, simulate, and generate code for various pharmacokinetic models, including standard and Target-Mediated Drug Disposition (TMDD) models.</p>
+                <h4 class="font-semibold mt-4 mb-1">How It Works:</h4>
+                <ol class="list-decimal list-inside space-y-2">
+                  <li>
+                    <strong>Select a Model:</strong> Use the "Model Library" panel to choose a model type and configure its specific structure.
+                  </li>
+                  <li>
+                    <strong>View Model Details:</strong> The "Selected Model" tab provides a textual description of the current model's components and assumptions.
+                  </li>
+                  <li>
+                    <strong>Customize Diagram & Plot:</strong> Use the "Diagram Settings" and "Plot Settings" tabs to customize every aspect of the visuals.
+                  </li>
+                  <li>
+                    <strong>View Results:</strong> The diagram and plot in the center panel update automatically as you make changes.
+                  </li>
+                  <li>
+                    <strong>Export:</strong> Use the right-hand panel to download high-quality images, reproducible code, or model code for NONMEM, Monolix, and R.
+                  </li>
+                </ol>
+              </div>
             </div>
+          </div>
         </div>
-
-        <!-- Right Column: Exports (remaining space) -->
-        <div class="bg-white shadow-lg p-6 flex flex-col gap-6 border border-slate-300 flex-grow" style="min-width: 350px;">
-            <h2 class="text-lg font-semibold text-slate-700 border-b pb-2 flex items-center gap-2"><i class="fa-solid fa-file-image text-green-600"></i><span>Export Image</span></h2>
-            <div class="grid grid-cols-[120px_1fr] items-center gap-3"><label for="canvas-width-input" class="text-sm font-semibold text-slate-600 text-right">Diagram Width:</label><input type="number" id="canvas-width-input" value="700" min="200" step="10" class="w-full text-sm rounded-md border-slate-300"></div>
-            <div class="grid grid-cols-[120px_1fr] items-center gap-3"><label for="canvas-height-input" class="text-sm font-semibold text-slate-600 text-right">Diagram Height:</label><input type="number" id="canvas-height-input" value="450" min="200" step="10" class="w-full text-sm rounded-md border-slate-300"></div>
-            <div class="grid grid-cols-[120px_1fr] items-center gap-3"><label for="image-format-select" class="text-sm font-semibold text-slate-600 text-right">Format:</label><select id="image-format-select" class="w-full text-sm rounded-md border-slate-300"><option value="png">PNG</option><option value="jpeg">JPG</option></select></div>
-            <div class="grid grid-cols-[120px_1fr] items-center gap-3"><label for="image-scale-input" class="text-sm font-semibold text-slate-600 text-right">Scale Factor:</label><input type="number" id="image-scale-input" value="3" min="1" step="0.5" class="w-full text-sm rounded-md border-slate-300"></div>
-            <div class="text-right text-xs text-slate-500 -mt-2" id="output-dimensions-preview">(Output: 2700 x 1350 px)</div>
-            <div class="flex flex-col gap-3 mt-2">
-                <button id="download-diagram-button" class="w-full py-2.5 px-4 bg-green-600 text-white font-bold rounded-lg shadow-md hover:bg-green-700 transition-colors flex items-center justify-center gap-2"><i class="fa-solid fa-download"></i><span>Download Diagram</span></button>
-                <button id="download-plot-button" class="w-full py-2.5 px-4 bg-teal-600 text-white font-bold rounded-lg shadow-md hover:bg-teal-700 transition-colors flex items-center justify-center gap-2"><i class="fa-solid fa-chart-line"></i><span>Download Plot</span></button>
+      </div>
+      <!-- Center Column: Visuals (45%) -->
+      <div class="flex flex-col gap-8" style="width: 45%; min-width: 400px;">
+        <div class="bg-slate-300 shadow-lg p-4 border border-slate-300" style="overflow-x:scroll">
+          <canvas id="main-canvas" width="700" height="450" class="bg-white"></canvas>
+          <div class="flex justify-bhetween items-center mt-2">
+            <div class="bg-white grid grid-cols-[120px_1fr] items-center gap-3">
+              <label for="canvas-width-input" class="text-sm font-semibold text-slate-600 text-right">Diagram Width:</label>
+              <input type="number" id="canvas-width-input" value="700" min="200" step="10" class="w-full text-sm rounded-md border-slate-300">
             </div>
-            <h2 class="text-lg font-semibold text-slate-700 border-b pb-2 mt-4 flex items-center gap-2"><i class="fa-solid fa-code text-purple-600"></i><span>Reproduce Diagram</span></h2>
-            <button id="download-code-button" class="w-full py-2.5 px-4 bg-purple-600 text-white font-bold rounded-lg shadow-md hover:bg-purple-700 transition-colors flex items-center justify-center gap-2"><i class="fa-solid fa-file-code"></i><span>Download Visualizer Code</span></button>
-            <h2 class="text-lg font-semibold text-slate-700 border-b pb-2 mt-4 flex items-center gap-2"><i class="fa-solid fa-cogs text-sky-600"></i><span>Download Model Code</span></h2>
-            <div class="flex flex-col gap-3">
-                <button id="download-nonmem-button" class="w-full py-2.5 px-4 bg-slate-700 text-white font-bold rounded-lg shadow-md hover:bg-slate-800"><i class="fa-solid fa-database"></i> NONMEM</button>
-                <button id="download-monolix-button" class="w-full py-2.5 px-4 bg-orange-500 text-white font-bold rounded-lg shadow-md hover:bg-orange-600"><i class="fa-solid fa-file-lines"></i> MONOLIX</button>
-                <button id="download-r-button" class="w-full py-2.5 px-4 bg-blue-800 text-white font-bold rounded-lg shadow-md hover:bg-blue-900"><i class="fa-brands fa-r-project"></i> R mrgsolve</button>
+            <div class="bg-white grid grid-cols-[120px_1fr] items-center gap-3">
+              <label for="canvas-height-input" class="text-sm font-semibold text-slate-600 text-right">Diagram Height:</label>
+              <input type="number" id="canvas-height-input" value="450" min="200" step="10" class="w-full text-sm rounded-md border-slate-300">
             </div>
+          </div>
         </div>
+        <div class="bg-white shadow-lg p-4 border border-slate-300" style="overflow-x:scroll">
+          <div class="flex justify-between items-center mb-2">
+            <div class="w-1/3"></div>
+            <h3 class="w-1/3 text-md font-semibold text-slate-700 text-center">Simulated Conc. vs. Time</h3>
+            <div class="w-1/3 text-right">
+              <label for="plot-scale-select" class="text-xs font-semibold text-slate-500">Scale:</label>
+              <select id="plot-scale-select" class="text-xs rounded-md border-slate-300 p-1">
+                <option value="linear" selected>Linear</option>
+                <option value="log">Semi-log</option>
+              </select>
+            </div>
+          </div>
+          <canvas id="plot-canvas" width="700" height="300" class="w-xfull"></canvas>
+        </div>
+      </div>
+      <!-- Right Column: Exports (remaining space) -->
+      <div class="bg-white shadow-lg p-6 flex flex-col gap-6 border border-slate-300 flex-grow" style="min-width: 350px;">
+        <h2 class="text-lg font-semibold text-slate-700 border-b pb-2 flex items-center gap-2">
+          <i class="fa-solid fa-file-image text-green-600"></i>
+          <span>Export Image</span>
+        </h2>
+        <div class="grid grid-cols-[120px_1fr] items-center gap-3">
+          <label for="image-format-select" class="text-sm font-semibold text-slate-600 text-right">Format:</label>
+          <select id="image-format-select" class="w-full text-sm rounded-md border-slate-300">
+            <option value="png">PNG</option>
+            <option value="jpeg">JPG</option>
+          </select>
+        </div>
+        <div class="grid grid-cols-[120px_1fr] items-center gap-3">
+          <label for="image-scale-input" class="text-sm font-semibold text-slate-600 text-right">Scale Factor:</label>
+          <input type="number" id="image-scale-input" value="1" min="1" step="0.5" class="w-full text-sm rounded-md border-slate-300">
+        </div>
+        <div class="text-right text-xs text-slate-500 -mt-2" id="output-dimensions-preview">(Output: 2700 x 1350 px)</div>
+        <div class="flex flex-col gap-3 mt-2">
+          <button id="download-diagram-button" class="w-full py-2.5 px-4 bg-green-600 text-white font-bold rounded-lg shadow-md hover:bg-green-700 transition-colors flex items-center justify-center gap-2">
+            <i class="fa-solid fa-download"></i>
+            <span>Download Diagram</span>
+          </button>
+          <button id="download-plot-button" class="w-full py-2.5 px-4 bg-teal-600 text-white font-bold rounded-lg shadow-md hover:bg-teal-700 transition-colors flex items-center justify-center gap-2">
+            <i class="fa-solid fa-chart-line"></i>
+            <span>Download Plot</span>
+          </button>
+        </div>
+        <h2 class="text-lg font-semibold text-slate-700 border-b pb-2 mt-4 flex items-center gap-2">
+          <i class="fa-solid fa-code text-purple-600"></i>
+          <span>Reproduce Diagram</span>
+        </h2>
+        <button id="download-code-button" class="w-full py-2.5 px-4 bg-purple-600 text-white font-bold rounded-lg shadow-md hover:bg-purple-700 transition-colors flex items-center justify-center gap-2">
+          <i class="fa-solid fa-file-code"></i>
+          <span>Download Visualizer Code</span>
+        </button>
+        <h2 class="text-lg font-semibold text-slate-700 border-b pb-2 mt-4 flex items-center gap-2">
+          <i class="fa-solid fa-cogs text-sky-600"></i>
+          <span>Download Model Code</span>
+        </h2>
+        <div class="flex flex-col gap-3">
+          <button id="download-nonmem-button" class="w-full py-2.5 px-4 bg-slate-700 text-white font-bold rounded-lg shadow-md hover:bg-slate-800">
+            <i class="fa-solid fa-database"></i> NONMEM </button>
+          <button id="download-monolix-button" class="w-full py-2.5 px-4 bg-orange-500 text-white font-bold rounded-lg shadow-md hover:bg-orange-600">
+            <i class="fa-solid fa-file-lines"></i> MONOLIX </button>
+          <button id="download-r-button" class="w-full py-2.5 px-4 bg-blue-800 text-white font-bold rounded-lg shadow-md hover:bg-blue-900">
+            <i class="fa-brands fa-r-project"></i> R mrgsolve </button>
+        </div>
+      </div>
     </main>
-
     <script src="pkpd.js"></script>
     <script src="code-generators.js"></script>
     <script src="custom-func.js"></script>
-
-</body>
+  </body>
 </html>
